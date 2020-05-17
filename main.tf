@@ -174,3 +174,11 @@ resource "aws_eip_association" "soupparadjis_terraria_eip_assoc" {
   instance_id = aws_instance.soupparadjis_terraria_ec2.id
   allocation_id = aws_eip.soupparadjis_terraria_ip.id
 }
+
+/*
+ * Outputs
+ */
+
+output "soupparadjis_terraria_ip" {
+  value = aws_instance.soupparadjis_terraria_ec2.public_ip
+}
