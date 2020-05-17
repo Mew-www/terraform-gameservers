@@ -136,7 +136,6 @@ resource "aws_security_group" "security_group_terraria_client" {
   }
 }
 
-
 /*
  * Server instances
  */
