@@ -11,7 +11,7 @@
 provider "aws" {}
 
 /*
- * Global variables
+ * Variables
  */
 
 variable "environment_tag" {
@@ -31,28 +31,28 @@ variable "terraria_ec2_keyfile" {
 resource "aws_vpc" "gaming_vpc" {
   cidr_block = "10.0.0.0/16" # 65'536 subnettable IP addresses
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 
 # Connect gaming_vpc to the internet
 resource "aws_internet_gateway" "gaming_vpc_gateway" {
-  vpc_id = "${aws_vpc.gaming_vpc.id}"
+  vpc_id = aws_vpc.gaming_vpc.id
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 
 # Map all internet addresses to gaming_vpc's gateway
 resource "aws_route_table" "public_gaming_vpc_routes" {
-  vpc_id = "${aws_vpc.gaming_vpc.id}"
+  vpc_id = aws_vpc.gaming_vpc.id
   route {
     cidr_block = "0.0.0.0/0" # public internet
-    gateway_id = "${aws_internet_gateway.gaming_vpc_gateway.id}"
+    gateway_id = aws_internet_gateway.gaming_vpc_gateway.id
   }
   tags = {
     Name = "mytagged_vpcs_route_table"
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 
@@ -63,16 +63,16 @@ resource "aws_route_table" "public_gaming_vpc_routes" {
 # Isolated network for terraria server(s)
 resource "aws_subnet" "terraria_subnet" {
   cidr_block = "10.0.0.0/24" # 256 available IP addresses
-  vpc_id = "${aws_vpc.gaming_vpc.id}"
+  vpc_id = aws_vpc.gaming_vpc.id
   map_public_ip_on_launch = false # define public IP addresses explicitly per instance
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 # Connect terraria_subnet to the internet
 resource "aws_route_table_association" "terraria_subnet_publification" {
-  subnet_id = "${aws_subnet.terraria_subnet.id}"
-  route_table_id = "${aws_route_table.public_gaming_vpc_routes.id}"
+  subnet_id = aws_subnet.terraria_subnet.id
+  route_table_id = aws_route_table.public_gaming_vpc_routes.id
 }
 
 /*
@@ -82,7 +82,7 @@ resource "aws_route_table_association" "terraria_subnet_publification" {
 # Allow outbound traffic to any (including public) IP address
 resource "aws_security_group" "security_group_allow_outbound" {
   name = "sg_allow_all_outbound"
-  vpc_id = "${aws_vpc.gaming_vpc.id}"
+  vpc_id = aws_vpc.gaming_vpc.id
   egress {
     from_port = 0
     protocol = "-1"
@@ -90,14 +90,14 @@ resource "aws_security_group" "security_group_allow_outbound" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 
 # Allow administration via SSH to/from servers, from any (including public) IP address
 resource "aws_security_group" "security_group_administration" {
   name = "sg_tcp22"
-  vpc_id = "${aws_vpc.gaming_vpc.id}"
+  vpc_id = aws_vpc.gaming_vpc.id
   ingress {
     from_port = 22
     protocol = "tcp"
@@ -111,14 +111,14 @@ resource "aws_security_group" "security_group_administration" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 
 # Allow Terraria game client<=>server connections
 resource "aws_security_group" "security_group_terraria_client" {
   name = "sg_tcp7777"
-  vpc_id = "${aws_vpc.gaming_vpc.id}"
+  vpc_id = aws_vpc.gaming_vpc.id
   ingress {
     from_port = 7777
     protocol = "tcp"
@@ -132,7 +132,7 @@ resource "aws_security_group" "security_group_terraria_client" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 
@@ -144,7 +144,7 @@ resource "aws_security_group" "security_group_terraria_client" {
 # Use known keypair (with local pubkey) for ec2 SSH connections
 resource "aws_key_pair" "terraria_administrator_ec2_keypair" {
   key_name = "terraria_ec2_key"
-  public_key = "${file(var.terraria_ec2_keyfile)}"
+  public_key = file(var.terraria_ec2_keyfile)
 }
 
 # Maintain a static IP address to Soup Paradjis terraria server
@@ -158,19 +158,19 @@ resource "aws_eip" "soupparadjis_terraria_ip" {
 resource "aws_instance" "soupparadjis_terraria_ec2" {
   ami = "ami-0b6d8a6db0c665fb7" # Ubuntu image AMI from https://cloud-images.ubuntu.com/locator/ec2/
   instance_type = "t2.medium" # Details https://aws.amazon.com/ec2/pricing/on-demand/
-  subnet_id = "${aws_subnet.terraria_subnet.id}"
+  subnet_id = aws_subnet.terraria_subnet.id
   associate_public_ip_address = true # Explicitly associate a public IP address (since subnet default is false)
   vpc_security_group_ids = [
-    "${aws_security_group.security_group_allow_outbound.id}",
-    "${aws_security_group.security_group_administration.id}",
-    "${aws_security_group.security_group_terraria_client.id}"
+    aws_security_group.security_group_allow_outbound.id,
+    aws_security_group.security_group_administration.id,
+    aws_security_group.security_group_terraria_client.id
   ]
-  key_name = "${aws_key_pair.terraria_administrator_ec2_keypair.key_name}"
+  key_name = aws_key_pair.terraria_administrator_ec2_keypair.key_name
   tags = {
-    Env = "${var.environment_tag}"
+    Env = var.environment_tag
   }
 }
 resource "aws_eip_association" "soupparadjis_terraria_eip_assoc" {
-  instance_id = "${aws_instance.soupparadjis_terraria_ec2.id}"
-  allocation_id = "${aws_eip.soupparadjis_terraria_ip.id}"
+  instance_id = aws_instance.soupparadjis_terraria_ec2.id
+  allocation_id = aws_eip.soupparadjis_terraria_ip.id
 }
