@@ -190,7 +190,7 @@ resource "aws_eip" "soupparadjis_terraria_ip" {
 # Create Soup Paradjis terraria server
 resource "aws_instance" "soupparadjis_terraria_ec2" {
   ami = "ami-0b6d8a6db0c665fb7" # Ubuntu image AMI from https://cloud-images.ubuntu.com/locator/ec2/
-  instance_type = "t2.medium" # Details https://aws.amazon.com/ec2/pricing/on-demand/
+  instance_type = "t2.small" # Details https://aws.amazon.com/ec2/pricing/on-demand/
   subnet_id = aws_subnet.terraria_subnet.id
   associate_public_ip_address = true # Explicitly associate a public IP address (since subnet default is false)
   vpc_security_group_ids = [
