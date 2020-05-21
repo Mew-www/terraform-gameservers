@@ -198,6 +198,7 @@ resource "aws_instance" "soupparadjis_terraria_ec2" {
     aws_security_group.security_group_administration.id,
     aws_security_group.security_group_terraria_client.id
   ]
+  iam_instance_profile = "CloudWatchAgentServerRole" # Enable CloudWatch Agent to send metrics (Disk, Memory)
   key_name = aws_key_pair.terraria_administrator_ec2_keypair.key_name
   tags = {
     Env = var.environment_tag
