@@ -49,6 +49,15 @@ variable "terraria_ec2_keyfile" {
 }
 
 /*
+ * Save-files
+ */
+resource "aws_s3_bucket" "savefiles" {
+  bucket = "gameservers-savefiles"
+  acl = "public-read"
+  versioning { enabled = false } # don't keep old savefiles by default, manually timestamp-version them if so
+}
+
+/*
  * Gaming VPC & internet connectivity
  */
 
