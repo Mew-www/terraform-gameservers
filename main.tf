@@ -9,6 +9,31 @@
  */
 
 provider "aws" {}
+# remote state storage
+resource "aws_s3_bucket" "terraform_state" {
+  bucket = "gameservers-tfstate"
+  versioning { enabled = true }
+  lifecycle { prevent_destroy = true }
+}
+resource "aws_dynamodb_table" "terraform_state_lock" {
+  name = "gameservers-tf-state"
+  read_capacity = 1
+  write_capacity = 1
+  hash_key = "LockID"
+  attribute {
+    name = "LockID"
+    type = "S" # string
+  }
+}
+# remote state lookup
+terraform {
+  backend "s3" {
+    encrypt = true
+    bucket = "gameservers-tfstate"
+    dynamodb_table = "gameservers-tf-state"
+    key = "terraform.tfstate"
+  }
+}
 
 /*
  * Variables
