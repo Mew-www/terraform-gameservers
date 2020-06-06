@@ -174,6 +174,8 @@ resource "aws_security_group" "security_group_terraria_client" {
  * Server instances
  */
 
+
+/*
 # Use known keypair (with local pubkey) for ec2 SSH connections
 resource "aws_key_pair" "terraria_administrator_ec2_keypair" {
   key_name = "terraria_ec2_key"
@@ -209,10 +211,7 @@ resource "aws_eip_association" "soupparadjis_terraria_eip_assoc" {
   allocation_id = aws_eip.soupparadjis_terraria_ip.id
 }
 
-/*
- * Outputs
- */
-
 output "soupparadjis_terraria_ip" {
   value = aws_instance.soupparadjis_terraria_ec2.public_ip
 }
+*/
